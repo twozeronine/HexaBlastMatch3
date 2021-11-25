@@ -1,0 +1,9 @@
+{
+	"constantsTableData": {
+		"BlockDefaultMoveSpeed": 0.3,
+		"BlockGravityMoveSpeed": 0.1,
+		"BlankToFullBlockTime": 0.1,
+		"TileAndBlockDefaultScale": 1.25,
+		"BlockMixMoveSpeed": 0.3
+	}
+}
