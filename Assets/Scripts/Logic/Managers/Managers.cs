@@ -17,6 +17,12 @@ public class Managers : MonoBehaviour
 
     #region Contents
 
+    private readonly GameManager game = new GameManager();
+    private readonly StageManager stage = new StageManager();
+    
+
+    public static GameManager Game => Instance.game;
+    public static StageManager Stage => Instance.stage;
     
     #endregion
 

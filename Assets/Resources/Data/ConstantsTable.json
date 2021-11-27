@@ -3,7 +3,9 @@
 		"BlockDefaultMoveSpeed": 0.3,
 		"BlockGravityMoveSpeed": 0.1,
 		"BlankToFullBlockTime": 0.1,
-		"TileAndBlockDefaultScale": 1.25,
-		"BlockMixMoveSpeed": 0.3
+		"TileDefaultScale": 0.85,
+		"BlockMixMoveSpeed": 0.3,
+		"DefaultHexPositionOffsetX": 0.65,
+		"DefaultHexPositionOffsetY": 0.375
 	}
 }

@@ -9,6 +9,7 @@ public class GameScene : BaseScene
     {
         base.Init();
         SceneType = Scene.Game;
+        Managers.Game.Init();
     }
     
     

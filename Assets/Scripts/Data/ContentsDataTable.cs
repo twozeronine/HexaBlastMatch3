@@ -15,8 +15,10 @@ namespace Data
         public float BlockDefaultMoveSpeed { get; set; }
         public float BlockGravityMoveSpeed { get; set; }
         public float BlankToFullBlockTime { get; set; }
-        public float TileAndBlockDefaultScale { get; set; }
+        public float TileDefaultScale { get; set; }
         public float BlockMixMoveSpeed { get; set; }
+        public float DefaultHexPositionOffsetX { get; set; }
+        public float DefaultHexPositionOffsetY { get; set; }
     }
 
     [Serializable]
@@ -29,25 +31,25 @@ namespace Data
 
     #endregion
 
-    #region Stat
+    #region Stage
 
     [Serializable]
-    public class Stat
+    public class StageTableData
     {
-        public int level;
-        public int maxHp;
-        public int attack;
-        public int totalExp;
+        public int Id { get; set; }
+        public int MoveCount { get; set; }
+        public string MissionType { get; set; }
+        public int MissionCount { get; set; }
     }
 
     [Serializable]
-    public class StatData : ILoader<int, Stat>
+    public class StageData : ILoader<int, StageTableData>
     {
-        public List<Stat> stats = new List<Stat>();
+        public List<StageTableData> stageTableData = new List<StageTableData>();
 
-        public Dictionary<int, Stat> MakeDict()
+        public Dictionary<int, StageTableData> MakeDict()
         {
-            return stats.ToDictionary(stat => stat.level);
+            return stageTableData.ToDictionary(stageInfo => stageInfo.Id);
         }
     }
 
