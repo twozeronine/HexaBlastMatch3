@@ -44,4 +44,13 @@ namespace Data
         public Tile ParentTile { get; set; }
         public bool IsValid;
     }
+
+    public class MatchedBlock
+    {
+        public Vector2Int BlockPos { get; set; } = new Vector2Int(-1, -1);
+        public BlockColor Color { get; set; }
+        public bool IsMatched3Top { get; set; } = false;
+        public bool IsMatched3TopRight { get; set; } = false;
+        public bool IsMatched3BottomRight { get; set; } = false;
+    }
 }

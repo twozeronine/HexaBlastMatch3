@@ -30,8 +30,5 @@ public class GameBlocksView : MonoBehaviour , BaseMVP.IView
         }
     }
 
-    public GameObject GetInstance()
-    {
-        throw new System.NotImplementedException();
-    }
+    public GameObject GetInstance() => gameObject;
 }

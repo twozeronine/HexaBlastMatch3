@@ -22,6 +22,7 @@ public class TileView : MonoBehaviour, BaseMVP.IView
         tileImage.color = tile.TileColor switch
         {
             TileColor.Gray => new Color(42 / 255f, 50 / 255f, 84 / 255f),
+            _ => throw new ArgumentOutOfRangeException()
         };
 
         switch (tile.Type)
