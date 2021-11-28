@@ -501,7 +501,8 @@ public static class HexaBlastEngineUtil
                   !matchedBlock.IsMatched3Top &&
                   !matchedBlock.IsMatched3Bottom
                   && matchedBlock.BlockPos.x == block.BlockPos.x
-                  && (matchedBlock.BlockPos.y + 2 == block.BlockPos.y
+                  && (matchedBlock.BlockPos.y  == block.BlockPos.y
+                      || matchedBlock.BlockPos.y + 2 == block.BlockPos.y
                       || matchedBlock.BlockPos.y + 4 == block.BlockPos.y
                       || matchedBlock.BlockPos.y - 2 == block.BlockPos.y)
             select new MovableBlockView()
@@ -526,7 +527,8 @@ public static class HexaBlastEngineUtil
                   !matchedBlock.IsMatched3Top &&
                   !matchedBlock.IsMatched3Bottom
                   && matchedBlock.BlockPos.x == block.BlockPos.x
-                  && (matchedBlock.BlockPos.y + 2 == block.BlockPos.y
+                  && (matchedBlock.BlockPos.y  == block.BlockPos.y
+                      || matchedBlock.BlockPos.y + 2 == block.BlockPos.y
                       || matchedBlock.BlockPos.y - 2 == block.BlockPos.y
                       || matchedBlock.BlockPos.y - 4 == block.BlockPos.y)
             select new MovableBlockView()
