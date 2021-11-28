@@ -127,8 +127,8 @@ public static class HexaBlastEngine
             where !direction.Equals(exceptDirection)
             select CheckMatch3Pattern(nextBlocks.BlocksMap[nextBlock.BlockPos], nextBlocks, direction) ||
                    CheckMatch3MiddleY(nextBlocks.BlocksMap[nextBlock.BlockPos], nextBlocks) ||
-                   CheckMatch3MiddleDiagonalLeftDown(nextBlocks.BlocksMap[nextBlock.BlockPos], nextBlocks) ||
-                   CheckMatch3MiddleDiagonalRightDown(nextBlocks.BlocksMap[nextBlock.BlockPos], nextBlocks)
+                   CheckMatch3MiddleDiagonalLowerLeft(nextBlocks.BlocksMap[nextBlock.BlockPos], nextBlocks) ||
+                   CheckMatch3MiddleDiagonalLowerRight(nextBlocks.BlocksMap[nextBlock.BlockPos], nextBlocks)
                    ).ToList();
 
         return result.Any(isTrue => isTrue);
@@ -172,7 +172,7 @@ public static class HexaBlastEngine
      *      1 
      *  하는 로직
      */
-    public static bool CheckMatch3MiddleDiagonalRightDown(Block block, Blocks blocksMap)
+    public static bool CheckMatch3MiddleDiagonalLowerRight(Block block, Blocks blocksMap)
     {
         var nextTopLeftBlock = HexaBlastEngineUtil.GetBlock(blocksMap, Direction.TopLeft, block.BlockPos);
         var nextBottomRightBlock = HexaBlastEngineUtil.GetBlock(blocksMap, Direction.BottomRight, block.BlockPos);
@@ -187,7 +187,7 @@ public static class HexaBlastEngine
      *  1 
      *  하는 로직
      */
-    public static bool CheckMatch3MiddleDiagonalLeftDown(Block block, Blocks blocksMap)
+    public static bool CheckMatch3MiddleDiagonalLowerLeft(Block block, Blocks blocksMap)
     {
         var nextTopRightBlock = HexaBlastEngineUtil.GetBlock(blocksMap, Direction.TopRight, block.BlockPos);
         var nextBottomLeftBlock = HexaBlastEngineUtil.GetBlock(blocksMap, Direction.BottomLeft, block.BlockPos);
@@ -196,20 +196,99 @@ public static class HexaBlastEngine
                nextBottomLeftBlock is { IsValid: true } && nextBottomLeftBlock.Color.Equals(block.Color);
     }
     
+    // Match 4 감지하는 로직
+    public static bool CheckMatch4Pattern(Block block, Blocks blocksMap, Direction dir, int depth = 0) =>
+        CheckMatch3Pattern(block, blocksMap, dir, depth, 1);
+    
+    public static bool CheckMatch4MiddleY(Block block, Blocks blocksMap, bool isTop)
+    {
+        var nextTopBlock = HexaBlastEngineUtil.GetBlock(blocksMap, Direction.Top, block.BlockPos);
+        var nextBottomBlock = HexaBlastEngineUtil.GetBlock(blocksMap, Direction.Bottom, block.BlockPos);
+
+        if (nextTopBlock == null || nextBottomBlock == null) return false;
+
+        var nextExtraBlock = HexaBlastEngineUtil.GetBlock(blocksMap, isTop ? Direction.Top : Direction.Bottom,
+            isTop ? nextTopBlock.BlockPos : nextBottomBlock.BlockPos);
+
+        return nextTopBlock is { IsValid: true } && nextTopBlock.Color.Equals(block.Color) &&
+               nextBottomBlock is { IsValid: true } && nextBottomBlock.Color.Equals(block.Color) &&
+               nextExtraBlock is { IsValid: true } && nextExtraBlock.Color.Equals(block.Color);
+    }
+    
+    /*
+     * 1
+     *   1  <-- 이 블럭을 움직여 매치 4가 된 경우. isUp = true
+     *     1   <-- 이 블럭을 움직여 매치 4가 된 경우. isUp = false
+     *       1 
+     */
+    public static bool CheckMatch4MiddleDiagonalLowerRight(Block block, Blocks blocksMap, bool isUp)
+    {
+        var nextTopLeftBlock = HexaBlastEngineUtil.GetBlock(blocksMap, Direction.TopLeft, block.BlockPos);
+        var nextBottomRightBlock = HexaBlastEngineUtil.GetBlock(blocksMap, Direction.BottomRight, block.BlockPos);
+
+        if (nextTopLeftBlock == null || nextBottomRightBlock == null) return false;
+
+        var nextExtraBlock = HexaBlastEngineUtil.GetBlock(blocksMap, isUp ? Direction.TopLeft : Direction.BottomRight,
+            isUp ? nextTopLeftBlock.BlockPos : nextBottomRightBlock.BlockPos);
+
+
+        return nextTopLeftBlock is { IsValid: true } && nextTopLeftBlock.Color.Equals(block.Color) &&
+               nextBottomRightBlock is { IsValid: true } && nextBottomRightBlock.Color.Equals(block.Color) &&
+               nextExtraBlock is { IsValid: true } && nextExtraBlock.Color.Equals(block.Color);
+    }
+    
+    /*
+     *          1
+     *       1 <-- 이 블럭을 움직여 매치 4가 된 경우. isUp = true
+     *     1   <-- 이 블럭을 움직여 매치 4가 된 경우. isUp = false
+     *   1 
+     */
+    public static bool CheckMatch4MiddleDiagonalLowerLeft(Block block, Blocks blocksMap, bool isUp)
+    {
+        var nextTopRightBlock = HexaBlastEngineUtil.GetBlock(blocksMap, Direction.TopRight, block.BlockPos);
+        var nextBottomLeftBlock = HexaBlastEngineUtil.GetBlock(blocksMap, Direction.BottomLeft, block.BlockPos);
+
+        if (nextTopRightBlock == null || nextBottomLeftBlock == null) return false;
+
+        var nextExtraBlock = HexaBlastEngineUtil.GetBlock(blocksMap, isUp ? Direction.TopRight : Direction.BottomLeft,
+            isUp ? nextTopRightBlock.BlockPos : nextBottomLeftBlock.BlockPos);
+
+
+        return nextTopRightBlock is { IsValid: true } && nextTopRightBlock.Color.Equals(block.Color) &&
+               nextBottomLeftBlock is { IsValid: true } && nextBottomLeftBlock.Color.Equals(block.Color) &&
+               nextExtraBlock is { IsValid: true } && nextExtraBlock.Color.Equals(block.Color);
+    }
+
+    
     public static MatchedBlock ScanMatch3(Block targetBlock, Blocks blocks,Vector2Int prevPos = default)
     {
         if (prevPos == default) prevPos = targetBlock.BlockPos;
 
+        // Match 4
+
+        var isMatched4Top = CheckMatch4Pattern(targetBlock, blocks, Direction.Top); 
+        var isMatched4TopRight = CheckMatch4Pattern(targetBlock, blocks, Direction.TopRight);
+        var isMatched4TopLeft = CheckMatch4Pattern(targetBlock, blocks, Direction.TopLeft);
+        var isMatched4Bottom =  CheckMatch4Pattern(targetBlock, blocks, Direction.Bottom);
+        var isMatched4BottomLeft =CheckMatch4Pattern(targetBlock, blocks, Direction.BottomLeft);
+        var isMatched4BottomRight =CheckMatch4Pattern(targetBlock, blocks, Direction.BottomRight);
+        var isMatched4MiddleDiagonalLowerLeftUp = CheckMatch4MiddleDiagonalLowerLeft(targetBlock, blocks, true);
+        var isMatched4MiddleDiagonalLowerLeftDown = CheckMatch4MiddleDiagonalLowerLeft(targetBlock, blocks, false);
+        var isMatched4MiddleDiagonalLowerRightUp = CheckMatch4MiddleDiagonalLowerLeft(targetBlock, blocks, true);
+        var isMatched4MiddleDiagonalLowerRightDown = CheckMatch4MiddleDiagonalLowerLeft(targetBlock, blocks, false);
+        var isMatched4MiddleUpperY = CheckMatch4MiddleY(targetBlock, blocks, true);
+        var isMatched4MiddleLowerY = CheckMatch4MiddleY(targetBlock, blocks, true);
+        
         // Match 3
-        var isMatched3Top = CheckMatch3Pattern(targetBlock, blocks, Direction.Top);
-        var isMatched3TopRight = CheckMatch3Pattern(targetBlock, blocks, Direction.TopRight);
-        var isMatched3TopLeft = CheckMatch3Pattern(targetBlock, blocks, Direction.TopLeft);
-        var isMatched3Bottom =  CheckMatch3Pattern(targetBlock, blocks, Direction.Bottom);
-        var isMatched3BottomLeft =  CheckMatch3Pattern(targetBlock, blocks, Direction.BottomLeft);
-        var isMatched3BottomRight =  CheckMatch3Pattern(targetBlock, blocks, Direction.BottomRight);
-        var isMatched3MiddleDiagonalLeftDown = CheckMatch3MiddleDiagonalLeftDown(targetBlock, blocks);
-        var isMatched3MiddleXDiagonalRightDown = CheckMatch3MiddleDiagonalRightDown(targetBlock, blocks);
-        var isMatched3MiddleY = CheckMatch3MiddleY(targetBlock, blocks);
+        var isMatched3Top = !isMatched4Top && CheckMatch3Pattern(targetBlock, blocks, Direction.Top);
+        var isMatched3TopRight = !isMatched4TopRight && CheckMatch3Pattern(targetBlock, blocks, Direction.TopRight);
+        var isMatched3TopLeft = !isMatched4TopLeft && CheckMatch3Pattern(targetBlock, blocks, Direction.TopLeft);
+        var isMatched3Bottom = !isMatched4Bottom && CheckMatch3Pattern(targetBlock, blocks, Direction.Bottom);
+        var isMatched3BottomLeft = !isMatched4BottomLeft && CheckMatch3Pattern(targetBlock, blocks, Direction.BottomLeft);
+        var isMatched3BottomRight = !isMatched4BottomRight && CheckMatch3Pattern(targetBlock, blocks, Direction.BottomRight);
+        var isMatched3MiddleDiagonalLeftDown = !(isMatched4MiddleDiagonalLowerLeftUp || isMatched4MiddleDiagonalLowerLeftDown) && CheckMatch3MiddleDiagonalLowerLeft(targetBlock, blocks);
+        var isMatched3MiddleXDiagonalRightDown = !(isMatched4MiddleDiagonalLowerRightUp || isMatched4MiddleDiagonalLowerRightDown ) && CheckMatch3MiddleDiagonalLowerRight(targetBlock, blocks);
+        var isMatched3MiddleY = !(isMatched4MiddleUpperY ||isMatched4MiddleLowerY ) && CheckMatch3MiddleY(targetBlock, blocks);
 
         return new MatchedBlock()
         {
@@ -223,9 +302,21 @@ public static class HexaBlastEngine
             IsMatched3Bottom = isMatched3Bottom,
             IsMatched3BottomLeft = isMatched3BottomLeft, 
             IsMatched3BottomRight = isMatched3BottomRight,
-            IsMatched3MiddleDiagonalLeftDown = isMatched3MiddleDiagonalLeftDown,
-            IsMatched3MiddleDiagonalRightDown = isMatched3MiddleXDiagonalRightDown,
+            IsMatched3MiddleDiagonalLowerLeft = isMatched3MiddleDiagonalLeftDown,
+            IsMatched3MiddleDiagonalLowerRight = isMatched3MiddleXDiagonalRightDown,
             IsMatched3MiddleY = isMatched3MiddleY,
+            IsMatched4Top           = isMatched4Top,
+            IsMatched4TopLeft       = isMatched4TopLeft,
+            IsMatched4TopRight      = isMatched4TopRight,
+            IsMatched4Bottom        = isMatched4Bottom,
+            IsMatched4BottomRight   = isMatched4BottomRight,
+            IsMatched4BottomLeft    = isMatched4BottomLeft,
+            IsMatched4MiddleUpperY  = isMatched4MiddleUpperY,
+            IsMatched4MiddleLowerY  = isMatched4MiddleLowerY,
+            IsMatched4MiddleDiagonalLowerLeftUp    = isMatched4MiddleDiagonalLowerLeftUp,
+            IsMatched4MiddleDiagonalLowerLeftDown  = isMatched4MiddleDiagonalLowerLeftDown,
+            IsMatched4MiddleDiagonalLowerRightUp   = isMatched4MiddleDiagonalLowerRightUp,
+            IsMatched4MiddleDiagonalLowerRightDown = isMatched4MiddleDiagonalLowerRightDown,
         };
     }
 }
@@ -376,7 +467,7 @@ public static class HexaBlastEngineUtil
         // MiddleDiagonalLeftDown
         removeBlocks.AddRange((from block in blocks.BlocksMap.Values
             where 
-                  matchedBlock.IsMatched3MiddleDiagonalLeftDown
+                  matchedBlock.IsMatched3MiddleDiagonalLowerLeft
                   && (
                       (matchedBlock.BlockPos.x == block.BlockPos.x && matchedBlock.BlockPos.y  == block.BlockPos.y ) ||
                       (matchedBlock.BlockPos.x-1 == block.BlockPos.x && matchedBlock.BlockPos.y-1  == block.BlockPos.y ) ||
@@ -395,7 +486,7 @@ public static class HexaBlastEngineUtil
         // MiddleDiagonalRightDown
         removeBlocks.AddRange((from block in blocks.BlocksMap.Values
             where 
-                  matchedBlock.IsMatched3MiddleDiagonalRightDown
+                  matchedBlock.IsMatched3MiddleDiagonalLowerRight
                   && (
                       (matchedBlock.BlockPos.x == block.BlockPos.x && matchedBlock.BlockPos.y  == block.BlockPos.y ) ||
                       (matchedBlock.BlockPos.x+1 == block.BlockPos.x && matchedBlock.BlockPos.y-1  == block.BlockPos.y ) ||

@@ -60,12 +60,30 @@ namespace Data
         
         public bool IsMatched3BottomLeft { get; set; } = false;
         public bool IsMatched3MiddleY { get; set; } = false;
-        public bool IsMatched3MiddleDiagonalLeftDown { get; set; } = false;
-        public bool IsMatched3MiddleDiagonalRightDown { get; set; } = false;
+        public bool IsMatched3MiddleDiagonalLowerLeft { get; set; } = false;
+        public bool IsMatched3MiddleDiagonalLowerRight { get; set; } = false;
+                             
+        public bool IsMatched4Top { get; set; } = false;
+        public bool IsMatched4TopLeft { get; set; } = false;
+        public bool IsMatched4TopRight { get; set; } = false;
+        public bool IsMatched4Bottom { get; set; } = false;
+        public bool IsMatched4BottomRight { get; set; } = false;
+        public bool IsMatched4BottomLeft { get; set; } = false;
+        public bool IsMatched4MiddleUpperY { get; set; } = false;
+        public bool IsMatched4MiddleLowerY { get; set; } = false;
+        public bool IsMatched4MiddleDiagonalLowerLeftUp { get; set; } = false;
+        public bool IsMatched4MiddleDiagonalLowerLeftDown { get; set; } = false;
+        public bool IsMatched4MiddleDiagonalLowerRightUp { get; set; } = false;
+        public bool IsMatched4MiddleDiagonalLowerRightDown { get; set; } = false;
 
         public bool IsMatched() => IsMatched3Bottom || IsMatched3TopLeft || IsMatched3TopRight || IsMatched3Top ||
-                                   IsMatched3BottomRight || IsMatched3BottomLeft || IsMatched3MiddleY 
-                                   || IsMatched3MiddleDiagonalLeftDown || IsMatched3MiddleDiagonalRightDown ;
+                                   IsMatched3BottomRight || IsMatched3BottomLeft || IsMatched3MiddleY
+                                   || IsMatched3MiddleDiagonalLowerLeft || IsMatched3MiddleDiagonalLowerRight ||
+                                   IsMatched4Top || IsMatched4TopLeft || IsMatched4TopRight ||
+                                   IsMatched4Bottom || IsMatched4BottomRight || IsMatched4BottomLeft ||
+                                   IsMatched4MiddleUpperY || IsMatched4MiddleLowerY || IsMatched4MiddleDiagonalLowerLeftUp ||
+                                   IsMatched4MiddleDiagonalLowerLeftDown || IsMatched4MiddleDiagonalLowerRightUp ||
+                                   IsMatched4MiddleDiagonalLowerRightDown;
         public int GetPriorityScore()
         {
             PriorityScore += IsMatched3Top                     ? 1 : 0;
@@ -75,8 +93,8 @@ namespace Data
             PriorityScore += IsMatched3BottomRight             ? 1 : 0;
             PriorityScore += IsMatched3BottomLeft              ? 1 : 0;
             PriorityScore += IsMatched3MiddleY                 ? 1 : 0;
-            PriorityScore += IsMatched3MiddleDiagonalLeftDown  ? 1 : 0;
-            PriorityScore += IsMatched3MiddleDiagonalRightDown ? 1 : 0;
+            PriorityScore += IsMatched3MiddleDiagonalLowerLeft  ? 1 : 0;
+            PriorityScore += IsMatched3MiddleDiagonalLowerRight ? 1 : 0;
 
             return PriorityScore;
         }
