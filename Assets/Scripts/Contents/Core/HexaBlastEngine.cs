@@ -228,8 +228,8 @@ public static class HexaBlastEngine
 
         if (nextTopLeftBlock == null || nextBottomRightBlock == null) return false;
 
-        var nextExtraBlock = HexaBlastEngineUtil.GetBlock(blocksMap, isUp ? Direction.TopLeft : Direction.BottomRight,
-            isUp ? nextTopLeftBlock.BlockPos : nextBottomRightBlock.BlockPos);
+        var nextExtraBlock = HexaBlastEngineUtil.GetBlock(blocksMap, isUp ? Direction.BottomRight : Direction.TopLeft,
+            isUp ? nextBottomRightBlock.BlockPos : nextTopLeftBlock.BlockPos);
 
 
         return nextTopLeftBlock is { IsValid: true } && nextTopLeftBlock.Color.Equals(block.Color) &&
@@ -250,9 +250,8 @@ public static class HexaBlastEngine
 
         if (nextTopRightBlock == null || nextBottomLeftBlock == null) return false;
 
-        var nextExtraBlock = HexaBlastEngineUtil.GetBlock(blocksMap, isUp ? Direction.TopRight : Direction.BottomLeft,
-            isUp ? nextTopRightBlock.BlockPos : nextBottomLeftBlock.BlockPos);
-
+        var nextExtraBlock = HexaBlastEngineUtil.GetBlock(blocksMap, isUp ? Direction.BottomLeft : Direction.TopRight ,
+            isUp ? nextBottomLeftBlock.BlockPos :  nextTopRightBlock.BlockPos);
 
         return nextTopRightBlock is { IsValid: true } && nextTopRightBlock.Color.Equals(block.Color) &&
                nextBottomLeftBlock is { IsValid: true } && nextBottomLeftBlock.Color.Equals(block.Color) &&
@@ -274,18 +273,18 @@ public static class HexaBlastEngine
         var isMatched4BottomRight =CheckMatch4Pattern(targetBlock, blocks, Direction.BottomRight);
         var isMatched4MiddleDiagonalLowerLeftUp = CheckMatch4MiddleDiagonalLowerLeft(targetBlock, blocks, true);
         var isMatched4MiddleDiagonalLowerLeftDown = CheckMatch4MiddleDiagonalLowerLeft(targetBlock, blocks, false);
-        var isMatched4MiddleDiagonalLowerRightUp = CheckMatch4MiddleDiagonalLowerLeft(targetBlock, blocks, true);
-        var isMatched4MiddleDiagonalLowerRightDown = CheckMatch4MiddleDiagonalLowerLeft(targetBlock, blocks, false);
+        var isMatched4MiddleDiagonalLowerRightUp = CheckMatch4MiddleDiagonalLowerRight(targetBlock, blocks, true);
+        var isMatched4MiddleDiagonalLowerRightDown = CheckMatch4MiddleDiagonalLowerRight(targetBlock, blocks, false);
         var isMatched4MiddleUpperY = CheckMatch4MiddleY(targetBlock, blocks, true);
         var isMatched4MiddleLowerY = CheckMatch4MiddleY(targetBlock, blocks, true);
         
         // Match 3
         var isMatched3Top = !isMatched4Top && CheckMatch3Pattern(targetBlock, blocks, Direction.Top);
-        var isMatched3TopRight = !isMatched4TopRight && CheckMatch3Pattern(targetBlock, blocks, Direction.TopRight);
-        var isMatched3TopLeft = !isMatched4TopLeft && CheckMatch3Pattern(targetBlock, blocks, Direction.TopLeft);
+        var isMatched3TopRight = !(isMatched4TopRight || isMatched4MiddleDiagonalLowerLeftDown )&& CheckMatch3Pattern(targetBlock, blocks, Direction.TopRight);
+        var isMatched3TopLeft = !(isMatched4TopLeft || isMatched4MiddleDiagonalLowerRightDown )&& CheckMatch3Pattern(targetBlock, blocks, Direction.TopLeft);
         var isMatched3Bottom = !isMatched4Bottom && CheckMatch3Pattern(targetBlock, blocks, Direction.Bottom);
-        var isMatched3BottomLeft = !isMatched4BottomLeft && CheckMatch3Pattern(targetBlock, blocks, Direction.BottomLeft);
-        var isMatched3BottomRight = !isMatched4BottomRight && CheckMatch3Pattern(targetBlock, blocks, Direction.BottomRight);
+        var isMatched3BottomLeft = !(isMatched4BottomLeft || isMatched4MiddleDiagonalLowerLeftUp) && CheckMatch3Pattern(targetBlock, blocks, Direction.BottomLeft);
+        var isMatched3BottomRight = !(isMatched4BottomRight || isMatched4MiddleDiagonalLowerRightUp ) && CheckMatch3Pattern(targetBlock, blocks, Direction.BottomRight);
         var isMatched3MiddleDiagonalLeftDown = !(isMatched4MiddleDiagonalLowerLeftUp || isMatched4MiddleDiagonalLowerLeftDown) && CheckMatch3MiddleDiagonalLowerLeft(targetBlock, blocks);
         var isMatched3MiddleXDiagonalRightDown = !(isMatched4MiddleDiagonalLowerRightUp || isMatched4MiddleDiagonalLowerRightDown ) && CheckMatch3MiddleDiagonalLowerRight(targetBlock, blocks);
         var isMatched3MiddleY = !(isMatched4MiddleUpperY ||isMatched4MiddleLowerY ) && CheckMatch3MiddleY(targetBlock, blocks);
@@ -340,10 +339,293 @@ public static class HexaBlastEngineUtil
     {
         var removeBlocks = new List<MovableBlockView>();
         
+/*
+         * Match 4 검사 
+         */
 
+        // Top
+
+        removeBlocks.AddRange((from block in blocks.BlocksMap.Values
+            where 
+                  !matchedBlock.IsMatched3Top &&
+                  matchedBlock.IsMatched4Top
+                  && matchedBlock.BlockPos.x == block.BlockPos.x
+                  && block.BlockPos.y - matchedBlock.BlockPos.y < 7
+                  && block.BlockPos.y - matchedBlock.BlockPos.y >= 0
+            select new MovableBlockView()
+            {
+                BlockPos = block.BlockPos,
+                TargetPos = matchedBlock.BlockPos,
+                BlockType = block.BlockType,
+                BlockColor = matchedBlock.Color,
+                PrevBlockType = block.BlockType,
+            }).ToList());
+
+        // Bottom
+        removeBlocks.AddRange((from block in blocks.BlocksMap.Values
+            where 
+                  !matchedBlock.IsMatched3Bottom &&
+                  matchedBlock.IsMatched4Bottom
+                  && matchedBlock.BlockPos.x == block.BlockPos.x
+                  && matchedBlock.BlockPos.y - block.BlockPos.y < 7
+                  && matchedBlock.BlockPos.y - block.BlockPos.y >= 0
+            select new MovableBlockView()
+            {
+                BlockPos = block.BlockPos,
+                TargetPos = matchedBlock.BlockPos,
+                BlockType =  block.BlockType,
+                BlockColor = matchedBlock.Color,
+                PrevBlockType = block.BlockType,
+            }).ToList());
+
+        // TopLeft
+        removeBlocks.AddRange((from block in blocks.BlocksMap.Values
+            where 
+                  !matchedBlock.IsMatched3TopLeft &&
+                  matchedBlock.IsMatched4TopLeft 
+                  && (
+                      (matchedBlock.BlockPos.x == block.BlockPos.x && matchedBlock.BlockPos.y  == block.BlockPos.y ) ||
+                      (matchedBlock.BlockPos.x-1 == block.BlockPos.x && matchedBlock.BlockPos.y+1  == block.BlockPos.y ) ||
+                      (matchedBlock.BlockPos.x-2 == block.BlockPos.x && matchedBlock.BlockPos.y+2  == block.BlockPos.y ) ||
+                      (matchedBlock.BlockPos.x-3 == block.BlockPos.x && matchedBlock.BlockPos.y+3  == block.BlockPos.y )
+                  )
+            select new MovableBlockView()
+            {
+                BlockPos = block.BlockPos,
+                TargetPos = matchedBlock.BlockPos,
+                BlockType = block.BlockType,
+                BlockColor = matchedBlock.Color,
+                PrevBlockType = block.BlockType,
+            }).ToList());
+        
+        // TopRight
+        removeBlocks.AddRange((from block in blocks.BlocksMap.Values
+            where 
+                  !matchedBlock.IsMatched3TopRight &&
+                  matchedBlock.IsMatched4TopRight 
+                  && (
+                      (matchedBlock.BlockPos.x == block.BlockPos.x && matchedBlock.BlockPos.y  == block.BlockPos.y ) ||
+                      (matchedBlock.BlockPos.x+1 == block.BlockPos.x && matchedBlock.BlockPos.y+1  == block.BlockPos.y ) ||
+                      (matchedBlock.BlockPos.x+2 == block.BlockPos.x && matchedBlock.BlockPos.y+2  == block.BlockPos.y ) ||
+                      (matchedBlock.BlockPos.x+3 == block.BlockPos.x && matchedBlock.BlockPos.y+3  == block.BlockPos.y )
+                  )
+            select new MovableBlockView()
+            {
+                BlockPos = block.BlockPos,
+                TargetPos = matchedBlock.BlockPos,
+                BlockType = block.BlockType,
+                BlockColor = matchedBlock.Color,
+                PrevBlockType = block.BlockType,
+            }).ToList());
+        
+        // BottomLeft
+        removeBlocks.AddRange((from block in blocks.BlocksMap.Values
+            where 
+                  !matchedBlock.IsMatched3BottomLeft &&
+                  matchedBlock.IsMatched4BottomLeft 
+                  && (
+                      (matchedBlock.BlockPos.x == block.BlockPos.x && matchedBlock.BlockPos.y  == block.BlockPos.y ) ||
+                      (matchedBlock.BlockPos.x-1 == block.BlockPos.x && matchedBlock.BlockPos.y-1  == block.BlockPos.y ) ||
+                      (matchedBlock.BlockPos.x-2 == block.BlockPos.x && matchedBlock.BlockPos.y-2  == block.BlockPos.y ) ||
+                      (matchedBlock.BlockPos.x-3 == block.BlockPos.x && matchedBlock.BlockPos.y-3  == block.BlockPos.y )
+                  )
+            select new MovableBlockView()
+            {
+                BlockPos = block.BlockPos,
+                TargetPos = matchedBlock.BlockPos,
+                BlockType = block.BlockType,
+                BlockColor = matchedBlock.Color,
+                PrevBlockType = block.BlockType,
+            }).ToList());
+        
+        // BottomRight
+        removeBlocks.AddRange((from block in blocks.BlocksMap.Values
+            where 
+                  !matchedBlock.IsMatched3BottomRight &&
+                  matchedBlock.IsMatched4BottomRight 
+                  && (
+                      (matchedBlock.BlockPos.x == block.BlockPos.x && matchedBlock.BlockPos.y  == block.BlockPos.y ) ||
+                      (matchedBlock.BlockPos.x+1 == block.BlockPos.x && matchedBlock.BlockPos.y-1  == block.BlockPos.y ) ||
+                      (matchedBlock.BlockPos.x+2 == block.BlockPos.x && matchedBlock.BlockPos.y-2  == block.BlockPos.y ) ||
+                      (matchedBlock.BlockPos.x+3 == block.BlockPos.x && matchedBlock.BlockPos.y-3  == block.BlockPos.y )
+                  )
+            select new MovableBlockView()
+            {
+                BlockPos = block.BlockPos,
+                TargetPos = matchedBlock.BlockPos,
+                BlockType = block.BlockType,
+                BlockColor = matchedBlock.Color,
+                PrevBlockType = block.BlockType,
+            }).ToList());
+
+        // MiddleUpperY
+        /*
+         *  1
+         *  1
+         *  0
+         *  1
+         */
+        removeBlocks.AddRange((from block in blocks.BlocksMap.Values
+            where 
+                  matchedBlock.IsMatched4MiddleUpperY &&
+                  !matchedBlock.IsMatched3Top &&
+                  !matchedBlock.IsMatched3Bottom
+                  && matchedBlock.BlockPos.x == block.BlockPos.x
+                  && (matchedBlock.BlockPos.y + 2 == block.BlockPos.y
+                      || matchedBlock.BlockPos.y + 4 == block.BlockPos.y
+                      || matchedBlock.BlockPos.y - 2 == block.BlockPos.y)
+            select new MovableBlockView()
+            {
+                BlockPos = block.BlockPos,
+                TargetPos = matchedBlock.BlockPos,
+                BlockType = block.BlockType,
+                BlockColor = matchedBlock.Color,
+                PrevBlockType = block.BlockType,
+            }).ToList());
+        
+        // MiddleLowerY
+        /*
+         *  1
+         *  0
+         *  1
+         *  1
+         */
+        removeBlocks.AddRange((from block in blocks.BlocksMap.Values
+            where 
+                  matchedBlock.IsMatched4MiddleLowerY &&
+                  !matchedBlock.IsMatched3Top &&
+                  !matchedBlock.IsMatched3Bottom
+                  && matchedBlock.BlockPos.x == block.BlockPos.x
+                  && (matchedBlock.BlockPos.y + 2 == block.BlockPos.y
+                      || matchedBlock.BlockPos.y - 2 == block.BlockPos.y
+                      || matchedBlock.BlockPos.y - 4 == block.BlockPos.y)
+            select new MovableBlockView()
+            {
+                BlockPos = block.BlockPos,
+                TargetPos = matchedBlock.BlockPos,
+                BlockType = block.BlockType,
+                BlockColor = matchedBlock.Color,
+                PrevBlockType = block.BlockType,
+            }).ToList());
+
+        // MiddleDiagonalLowerLeftUp
+        /*
+         *        1
+         *      0
+         *    1
+         *  1 
+         */
+        removeBlocks.AddRange((from block in blocks.BlocksMap.Values
+            where 
+                  matchedBlock.IsMatched4MiddleDiagonalLowerLeftUp &&
+                  !matchedBlock.IsMatched3MiddleDiagonalLowerLeft &&
+                  !matchedBlock.IsMatched3BottomLeft
+                  && (
+                      (matchedBlock.BlockPos.x == block.BlockPos.x && matchedBlock.BlockPos.y  == block.BlockPos.y ) ||
+                      (matchedBlock.BlockPos.x+1 == block.BlockPos.x && matchedBlock.BlockPos.y+1  == block.BlockPos.y ) ||
+                      (matchedBlock.BlockPos.x-1 == block.BlockPos.x && matchedBlock.BlockPos.y-1  == block.BlockPos.y ) ||
+                      (matchedBlock.BlockPos.x-2 == block.BlockPos.x && matchedBlock.BlockPos.y-2  == block.BlockPos.y )
+                  )
+            select new MovableBlockView()
+            {
+                BlockPos = block.BlockPos,
+                TargetPos = matchedBlock.BlockPos,
+                BlockType = block.BlockType,
+                BlockColor = matchedBlock.Color,
+                PrevBlockType = block.BlockType,
+            }).ToList()); 
+        
+        
+        // MiddleDiagonalLowerLeftDown
+        /*
+         *        1
+         *      1
+         *    0
+         *  1 
+         */
+        removeBlocks.AddRange((from block in blocks.BlocksMap.Values
+            where 
+                  matchedBlock.IsMatched4MiddleDiagonalLowerLeftDown &&
+                  !matchedBlock.IsMatched3MiddleDiagonalLowerLeft &&
+                  !matchedBlock.IsMatched3TopRight
+                  && (
+                      (matchedBlock.BlockPos.x == block.BlockPos.x && matchedBlock.BlockPos.y  == block.BlockPos.y ) ||
+                      (matchedBlock.BlockPos.x+1 == block.BlockPos.x && matchedBlock.BlockPos.y+1  == block.BlockPos.y ) ||
+                      (matchedBlock.BlockPos.x+2 == block.BlockPos.x && matchedBlock.BlockPos.y+2  == block.BlockPos.y ) ||
+                      (matchedBlock.BlockPos.x-1 == block.BlockPos.x && matchedBlock.BlockPos.y-1  == block.BlockPos.y )
+                  )
+            select new MovableBlockView()
+            {
+                BlockPos = block.BlockPos,
+                TargetPos = matchedBlock.BlockPos,
+                BlockType = block.BlockType,
+                BlockColor = matchedBlock.Color,
+                PrevBlockType = block.BlockType,
+            }).ToList());
+
+        // MiddleDiagonalLowerRightUp
+        /*
+         *  1
+         *    0
+         *      1
+         *        1 
+         */
+        removeBlocks.AddRange((from block in blocks.BlocksMap.Values
+            where 
+                matchedBlock.IsMatched4MiddleDiagonalLowerRightUp &&
+                !matchedBlock.IsMatched3MiddleDiagonalLowerRight &&
+                !matchedBlock.IsMatched3BottomRight
+                && (
+                    (matchedBlock.BlockPos.x == block.BlockPos.x && matchedBlock.BlockPos.y  == block.BlockPos.y ) ||
+                    (matchedBlock.BlockPos.x+1 == block.BlockPos.x && matchedBlock.BlockPos.y-1  == block.BlockPos.y ) ||
+                    (matchedBlock.BlockPos.x+2 == block.BlockPos.x && matchedBlock.BlockPos.y-2  == block.BlockPos.y ) ||
+                    (matchedBlock.BlockPos.x-1 == block.BlockPos.x && matchedBlock.BlockPos.y+1  == block.BlockPos.y )
+                )
+            select new MovableBlockView()
+            {
+                BlockPos = block.BlockPos,
+                TargetPos = matchedBlock.BlockPos,
+                BlockType = block.BlockType,
+                BlockColor = matchedBlock.Color,
+                PrevBlockType = block.BlockType,
+            }).ToList());  
+        
+        
+        // MiddleDiagonalLowerRightDown
+        /*
+         *  1
+         *    1
+         *      0
+         *        1 
+         */
+        removeBlocks.AddRange((from block in blocks.BlocksMap.Values
+            where 
+                matchedBlock.IsMatched4MiddleDiagonalLowerRightDown &&
+                !matchedBlock.IsMatched3MiddleDiagonalLowerRight &&
+                !matchedBlock.IsMatched3TopLeft
+                && (
+                    (matchedBlock.BlockPos.x == block.BlockPos.x && matchedBlock.BlockPos.y  == block.BlockPos.y ) ||
+                    (matchedBlock.BlockPos.x+1 == block.BlockPos.x && matchedBlock.BlockPos.y-1  == block.BlockPos.y ) ||
+                    (matchedBlock.BlockPos.x-1 == block.BlockPos.x && matchedBlock.BlockPos.y+1  == block.BlockPos.y ) ||
+                    (matchedBlock.BlockPos.x-2 == block.BlockPos.x && matchedBlock.BlockPos.y+2  == block.BlockPos.y )
+                )
+            select new MovableBlockView()
+            {
+                BlockPos = block.BlockPos,
+                TargetPos = matchedBlock.BlockPos,
+                BlockType = block.BlockType,
+                BlockColor = matchedBlock.Color,
+                PrevBlockType = block.BlockType,
+            }).ToList()); 
+        
+        /*
+         *  매치 3 제거 블럭 추가 
+         */
+        
         // Top
         removeBlocks.AddRange((from block in blocks.BlocksMap.Values
             where 
+                !matchedBlock.IsMatched4Top &&
                   matchedBlock.IsMatched3Top
                   && matchedBlock.BlockPos.x == block.BlockPos.x
                   && block.BlockPos.y - matchedBlock.BlockPos.y < 5
@@ -360,6 +642,7 @@ public static class HexaBlastEngineUtil
         // Bottom
         removeBlocks.AddRange((from block in blocks.BlocksMap.Values
             where 
+                !matchedBlock.IsMatched4Bottom &&
                   matchedBlock.IsMatched3Bottom
                   && matchedBlock.BlockPos.x == block.BlockPos.x
                   && matchedBlock.BlockPos.y - block.BlockPos.y < 5
@@ -376,6 +659,8 @@ public static class HexaBlastEngineUtil
         // TopLeft
         removeBlocks.AddRange((from block in blocks.BlocksMap.Values
             where 
+                !matchedBlock.IsMatched4TopLeft &&
+                !matchedBlock.IsMatched4MiddleDiagonalLowerRightDown && 
                   matchedBlock.IsMatched3TopLeft
                   && (
                       (matchedBlock.BlockPos.x == block.BlockPos.x && matchedBlock.BlockPos.y  == block.BlockPos.y ) ||
@@ -394,6 +679,8 @@ public static class HexaBlastEngineUtil
         // TopRight
         removeBlocks.AddRange((from block in blocks.BlocksMap.Values
             where 
+                !matchedBlock.IsMatched4TopRight &&
+                !matchedBlock.IsMatched4MiddleDiagonalLowerLeftDown &&
                   matchedBlock.IsMatched3TopRight
                   && (
                       (matchedBlock.BlockPos.x == block.BlockPos.x && matchedBlock.BlockPos.y  == block.BlockPos.y ) ||
@@ -412,6 +699,8 @@ public static class HexaBlastEngineUtil
         // BottomLeft
         removeBlocks.AddRange((from block in blocks.BlocksMap.Values
             where 
+                !matchedBlock.IsMatched4BottomLeft &&
+                !matchedBlock.IsMatched4MiddleDiagonalLowerLeftUp &&
                   matchedBlock.IsMatched3BottomLeft
                   && (
                       (matchedBlock.BlockPos.x == block.BlockPos.x && matchedBlock.BlockPos.y  == block.BlockPos.y ) ||
@@ -430,6 +719,8 @@ public static class HexaBlastEngineUtil
         // BottomRight
         removeBlocks.AddRange((from block in blocks.BlocksMap.Values
             where 
+                !matchedBlock.IsMatched4BottomRight &&
+                !matchedBlock.IsMatched4MiddleDiagonalLowerRightUp &&
                   matchedBlock.IsMatched3BottomRight
                   && (
                       (matchedBlock.BlockPos.x == block.BlockPos.x && matchedBlock.BlockPos.y  == block.BlockPos.y ) ||

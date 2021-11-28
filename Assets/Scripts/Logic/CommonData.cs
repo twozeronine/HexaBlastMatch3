@@ -71,9 +71,33 @@ namespace Data
         public bool IsMatched4BottomLeft { get; set; } = false;
         public bool IsMatched4MiddleUpperY { get; set; } = false;
         public bool IsMatched4MiddleLowerY { get; set; } = false;
+        /*
+         *        1
+         *      0
+         *    1
+         *  1
+         */
         public bool IsMatched4MiddleDiagonalLowerLeftUp { get; set; } = false;
+        /*
+         *        1
+         *      1
+         *    0
+         *  1
+         */
         public bool IsMatched4MiddleDiagonalLowerLeftDown { get; set; } = false;
+        /*
+         *  1
+         *    1
+         *      0
+         *        1
+         */
         public bool IsMatched4MiddleDiagonalLowerRightUp { get; set; } = false;
+        /*
+         *  1
+         *    0
+         *      1
+         *        1
+         */
         public bool IsMatched4MiddleDiagonalLowerRightDown { get; set; } = false;
 
         public bool IsMatched() => IsMatched3Bottom || IsMatched3TopLeft || IsMatched3TopRight || IsMatched3Top ||
