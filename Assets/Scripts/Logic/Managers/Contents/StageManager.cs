@@ -101,7 +101,7 @@ public class StageManager
             {new Vector2Int(4,8),new Tile(){IsValid = true,Type = TileType.Normal,TilePos = new Vector2Int(4,8)}},
             {new Vector2Int(4,10),new Tile(){IsValid = true,Type = TileType.Normal,TilePos = new Vector2Int(4,10)}},
             {new Vector2Int(4,12),new Tile(){IsValid = true,Type = TileType.Normal,TilePos = new Vector2Int(4,12)}},
-            {new Vector2Int(4,14),new Tile(){IsValid = true,Type = TileType.Normal,TilePos = new Vector2Int(4,14)}},
+            {new Vector2Int(4,14),new Tile(){IsValid = true,Type = TileType.Normal,TilePos = new Vector2Int(4,14),CanSpawnBlockTile = true}},
             {new Vector2Int(4,16),new Tile(){IsValid = false,Type = TileType.Empty,TilePos = new Vector2Int(4,16)}},
             {new Vector2Int(5,1),new Tile(){IsValid = false,Type = TileType.Empty,TilePos = new Vector2Int(5,1)}},
             {new Vector2Int(5,3),new Tile(){IsValid = false,Type = TileType.Empty,TilePos = new Vector2Int(5,3)}},

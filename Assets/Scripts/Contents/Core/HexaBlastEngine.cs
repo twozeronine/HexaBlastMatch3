@@ -805,4 +805,45 @@ public static class HexaBlastEngineUtil
            !matchedBlock.IsMatched3MiddleY &&
          */
     }
+        
+        public static Block GetRandomSpawnBlock(Vector2Int blockPos) =>
+            new Block()
+            {
+                Color = FuncUtil.GetRandomEnumValue<BlockColor>(),
+                BlockType = BlockType.Normal,
+                BlockPos = blockPos,
+                IsValid = true,
+                ParentTile = null,
+            };
+        
+        public static Tile GetTile(Tiles tiles, Direction direction, Vector2Int targetTilePos)
+            => direction switch
+            {
+                Direction.Top => tiles.GetTile(new Vector2Int(targetTilePos.x, targetTilePos.y + 2)),
+                Direction.Bottom => tiles.GetTile(new Vector2Int(targetTilePos.x, targetTilePos.y - 2)),
+                Direction.TopLeft => tiles.GetTile(new Vector2Int(targetTilePos.x - 1, targetTilePos.y + 1)),
+                Direction.TopRight => tiles.GetTile(new Vector2Int(targetTilePos.x + 1, targetTilePos.y + 1)),
+                Direction.BottomLeft => tiles.GetTile(new Vector2Int(targetTilePos.x -1, targetTilePos.y - 1)),
+                Direction.BottomRight => tiles.GetTile(new Vector2Int(targetTilePos.x + 1, targetTilePos.y - 1)),
+                _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
+            };
+
+
+        public static Vector2Int GetPosition(Direction direction, Vector2Int targetPos)
+            => direction switch
+            {
+                Direction.Top => (new Vector2Int(targetPos.x, targetPos.y + 2)),
+                Direction.Bottom => (new Vector2Int(targetPos.x, targetPos.y - 2)),
+                Direction.TopLeft => (new Vector2Int(targetPos.x - 1, targetPos.y + 1)),
+                Direction.TopRight => (new Vector2Int(targetPos.x + 1, targetPos.y + 1)),
+                Direction.BottomLeft => (new Vector2Int(targetPos.x - 1, targetPos.y - 1)),
+                Direction.BottomRight => (new Vector2Int(targetPos.x + 1, targetPos.y - 1)),
+                _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
+            };
+
+        public static bool ScanEmptyTile(Block block,Tiles tiles, Direction direction)
+        {
+            var nextTile = GetTile(tiles, direction, tiles.TilesMap[block.BlockPos].TilePos);
+            return nextTile is { ChildBlock: null };
+        }
 }

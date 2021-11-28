@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using Data;
 using DG.Tweening;
 using UnityEngine;
@@ -40,6 +41,35 @@ public class GameBlocksView : MonoBehaviour , BaseMVP.IView
             blockView.SetLayout(block);
         }
     }
+    
+    public bool TrySpawnBlock(MovableBlockView movableBlockView, float moveSpeed = 0, Block newBlock = null)
+    {
+        if (moveSpeed == 0) moveSpeed = Managers.Data.ConstantsTableData.BlockDefaultMoveSpeed;
+        if (MoveBlock(movableBlockView, moveSpeed))
+        {
+            return true;
+        }
+        else
+        {
+            var blockObj = Managers.Resource.Instantiate("Game/Block", transform);
+            blockObj.GetOrAddComponent<Poolable>();
+            blocksObjects.Add(new Vector2Int(movableBlockView.BlockPos.x, movableBlockView.BlockPos.y), blockObj);
+
+            var blockView = blockObj.GetOrAddComponent<BlockView>();
+            newBlock ??= new Block()
+            {
+                IsValid = true,
+                BlockPos = movableBlockView.BlockPos,
+                BlockType = movableBlockView.BlockType,
+                Color = movableBlockView.BlockColor,
+            };
+            blockView.SetLayout(newBlock);
+
+            MoveBlock(movableBlockView, moveSpeed);
+
+            return false;
+        }
+    }
 
     public bool MoveBlock(MovableBlockView movableBlockView, float moveSpeed = 0)
     {
@@ -50,6 +80,7 @@ public class GameBlocksView : MonoBehaviour , BaseMVP.IView
 
         return true;
     }
+    
     
     public GameObject GetInstance() => gameObject;
 }

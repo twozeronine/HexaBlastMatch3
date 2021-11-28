@@ -11,6 +11,7 @@ public class ScanBlankTileState : IState
 
     public void Process()
     {
+        Managers.Game.GamePresenter.RequestScanBlankTile();
     }
 
     public void End()

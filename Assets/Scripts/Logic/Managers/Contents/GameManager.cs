@@ -291,4 +291,227 @@ public class GamePresenter
         await UniTask.Delay(TimeSpan.FromSeconds(Managers.Data.ConstantsTableData.BlankToFullBlockTime));
         Managers.Game.ChangeGameState(EGameState.ScanBlankTileState);
     }
+     
+     public async UniTaskVoid RequestScanBlankTile()
+    {
+        Managers.Game.ChangeGameState(EGameState.Match3State);
+        var count = 0;
+
+        var blankTiles = new List<Tile>();
+        var tiles = Managers.Game.GameTilesModel.TilesProperty.Value;
+        blankTiles = (from tile in tiles.TilesMap.Values
+            where tile.IsValid && tile.ChildBlock == null
+            select tile).ToList();
+
+        var spawnNewBlocksQueue = new Queue<Block>();
+        var spawnNewBlocksViewQueue = new Queue<Block>();
+        
+        var prevBlocks = new Blocks()
+        {
+            BlocksMap = new Dictionary<Vector2Int, Block>(Managers.Game.GameBlocksModel.BlocksProperty.Value
+                .BlocksMap)
+        };
+        
+        var scanBlocks = new Blocks()
+        {
+            BlocksMap = new Dictionary<Vector2Int, Block>(prevBlocks.BlocksMap),
+        };
+        
+        var scanTiles = new Tiles()
+        {
+            TilesMap = new Dictionary<Vector2Int, Tile>(Managers.Game.GameTilesModel.TilesProperty.Value.TilesMap),
+        };
+        
+        foreach (var blankTile in blankTiles)
+        {
+            spawnNewBlocksQueue.Enqueue(HexaBlastEngineUtil.GetRandomSpawnBlock(blankTile.TilePos));
+        }
+        
+        var movableViewBlocks = new List<MovableBlockView>();
+
+        do
+        {
+            blankTiles = (from tile in scanTiles.TilesMap.Values
+                where tile.IsValid && tile.ChildBlock == null
+                select tile).ToList();
+
+            if(!blankTiles.Any()) break;
+
+            List<Block> canMoveToBottomBlocks;
+            do
+            {
+                movableViewBlocks.Clear();
+                canMoveToBottomBlocks = (from block in scanBlocks.BlocksMap.Values
+                    where block != null
+                    where HexaBlastEngineUtil.ScanEmptyTile(block, scanTiles, Direction.Bottom)
+                    select block).ToList();
+                
+                if(!canMoveToBottomBlocks.Any()) break;
+
+                foreach (var canMoveToBottomBlock in canMoveToBottomBlocks)
+                {
+                    var bottomPosition =
+                        HexaBlastEngineUtil.GetPosition(Direction.Bottom, canMoveToBottomBlock.BlockPos);
+                    if (scanBlocks.BlocksMap.ContainsKey(canMoveToBottomBlock.BlockPos))
+                        scanBlocks.BlocksMap[canMoveToBottomBlock.BlockPos] = null;
+                    scanBlocks.BlocksMap[bottomPosition] = canMoveToBottomBlock;
+                    if (scanTiles.TilesMap.ContainsKey(canMoveToBottomBlock.BlockPos))
+                        scanTiles.TilesMap[canMoveToBottomBlock.BlockPos].ChildBlock = null;
+                    scanTiles.TilesMap[bottomPosition]
+                            .ChildBlock
+                        = canMoveToBottomBlock;
+                    movableViewBlocks.Add(new MovableBlockView()
+                    {
+                        BlockPos = canMoveToBottomBlock.BlockPos,
+                        BlockColor = canMoveToBottomBlock.Color,
+                        BlockType = canMoveToBottomBlock.BlockType,
+                        TargetPos = bottomPosition,
+                        PrevBlockType = canMoveToBottomBlock.BlockType,
+                    });
+                    scanBlocks.BlocksMap[bottomPosition].BlockPos = bottomPosition;
+                }
+
+                foreach (var movableViewBlock in movableViewBlocks)
+                {
+                    gameBlocksView.TrySpawnBlock(movableViewBlock,
+                        Managers.Data.ConstantsTableData.BlockDefaultMoveSpeed);
+                }
+                await UniTask.Delay(TimeSpan.FromSeconds(Managers.Data.ConstantsTableData.BlockDefaultMoveSpeed));
+                Managers.Game.GameBlocksModel.BlocksProperty.Value = new Blocks()
+                {
+                    BlocksMap = new Dictionary<Vector2Int, Block>(scanBlocks.BlocksMap),
+                };
+            } while (canMoveToBottomBlocks.Any());
+
+            List<Block> canMoveToBottomLeftBlocks;
+            do
+            {
+                movableViewBlocks.Clear();
+                canMoveToBottomLeftBlocks = (from block in scanBlocks.BlocksMap.Values
+                    where block != null
+                    where HexaBlastEngineUtil.ScanEmptyTile(block, scanTiles, Direction.BottomLeft)
+                    select block).ToList();
+                
+                if(!canMoveToBottomLeftBlocks.Any()) break;
+
+                foreach (var canMoveToBottomLeftBlock in canMoveToBottomLeftBlocks)
+                {
+                    var bottomLeftPosition =
+                        HexaBlastEngineUtil.GetPosition(Direction.BottomLeft, canMoveToBottomLeftBlock.BlockPos);
+                    if (scanBlocks.BlocksMap.ContainsKey(canMoveToBottomLeftBlock.BlockPos))
+                        scanBlocks.BlocksMap[canMoveToBottomLeftBlock.BlockPos] = null;
+                    scanBlocks.BlocksMap[bottomLeftPosition]
+                        = canMoveToBottomLeftBlock;
+                    if (scanTiles.TilesMap.ContainsKey(canMoveToBottomLeftBlock.BlockPos))
+                        scanTiles.TilesMap[canMoveToBottomLeftBlock.BlockPos].ChildBlock = null;
+                    scanTiles.TilesMap[bottomLeftPosition].ChildBlock
+                        = canMoveToBottomLeftBlock;
+                    movableViewBlocks.Add(new MovableBlockView()
+                    {
+                        BlockPos = canMoveToBottomLeftBlock.BlockPos,
+                        BlockColor = canMoveToBottomLeftBlock.Color,
+                        BlockType = canMoveToBottomLeftBlock.BlockType,
+                        TargetPos = bottomLeftPosition,
+                        PrevBlockType = canMoveToBottomLeftBlock.BlockType,
+                    });
+                    scanBlocks.BlocksMap[bottomLeftPosition].BlockPos = bottomLeftPosition;
+                }
+
+                foreach (var movableViewBlock in movableViewBlocks)
+                {
+                    gameBlocksView.TrySpawnBlock(movableViewBlock,
+                        Managers.Data.ConstantsTableData.BlockDefaultMoveSpeed);
+                }
+                await UniTask.Delay(TimeSpan.FromSeconds(Managers.Data.ConstantsTableData.BlockDefaultMoveSpeed));
+                Managers.Game.GameBlocksModel.BlocksProperty.Value = new Blocks()
+                {
+                    BlocksMap = new Dictionary<Vector2Int, Block>(scanBlocks.BlocksMap),
+                };
+            } while (canMoveToBottomLeftBlocks.Any());
+            
+            List<Block> canMoveToBottomRightBlocks;
+            do
+            {
+                movableViewBlocks.Clear();
+                canMoveToBottomRightBlocks = (from block in scanBlocks.BlocksMap.Values
+                    where block != null
+                    where HexaBlastEngineUtil.ScanEmptyTile(block, scanTiles, Direction.BottomRight)
+                    select block).ToList();
+                
+                if(!canMoveToBottomRightBlocks.Any()) break;
+
+                foreach (var canMoveToBottomRightBlock in canMoveToBottomRightBlocks)
+                {
+                    var bottomRightPosition =
+                        HexaBlastEngineUtil.GetPosition(Direction.BottomRight, canMoveToBottomRightBlock.BlockPos); 
+                    if (scanBlocks.BlocksMap.ContainsKey(canMoveToBottomRightBlock.BlockPos))
+                        scanBlocks.BlocksMap[canMoveToBottomRightBlock.BlockPos] = null;
+                    scanBlocks.BlocksMap[bottomRightPosition] = canMoveToBottomRightBlock;
+                    if (scanTiles.TilesMap.ContainsKey(canMoveToBottomRightBlock.BlockPos))
+                        scanTiles.TilesMap[canMoveToBottomRightBlock.BlockPos].ChildBlock = null;
+                    scanTiles.TilesMap[bottomRightPosition].ChildBlock = canMoveToBottomRightBlock;
+                    movableViewBlocks.Add(new MovableBlockView()
+                    {
+                        BlockPos = canMoveToBottomRightBlock.BlockPos,
+                        BlockColor = canMoveToBottomRightBlock.Color,
+                        BlockType = canMoveToBottomRightBlock.BlockType,
+                        TargetPos = bottomRightPosition,
+                        PrevBlockType = canMoveToBottomRightBlock.BlockType,
+                    });
+                    scanBlocks.BlocksMap[bottomRightPosition].BlockPos = bottomRightPosition;
+                }
+
+                foreach (var movableViewBlock in movableViewBlocks)
+                {
+                    gameBlocksView.TrySpawnBlock(movableViewBlock,
+                        Managers.Data.ConstantsTableData.BlockDefaultMoveSpeed);
+                }
+                await UniTask.Delay(TimeSpan.FromSeconds(Managers.Data.ConstantsTableData.BlockDefaultMoveSpeed));
+                Managers.Game.GameBlocksModel.BlocksProperty.Value = new Blocks()
+                {
+                    BlocksMap = new Dictionary<Vector2Int, Block>(scanBlocks.BlocksMap),
+                };
+            } while (canMoveToBottomRightBlocks.Any());
+
+            var canRespawnBlockTiles = (from tile in scanTiles.TilesMap.Values
+                where tile.CanSpawnBlockTile
+                select tile).ToList();
+
+            
+
+            foreach (var canRespawnBlockTile in canRespawnBlockTiles)
+            {
+                var newSpawnBlock = spawnNewBlocksQueue.Dequeue();
+                newSpawnBlock.BlockPos = canRespawnBlockTile.TilePos;
+                movableViewBlocks.Add(new MovableBlockView()
+                {
+                    BlockPos = HexaBlastEngineUtil.GetPosition(Direction.Top, canRespawnBlockTile.TilePos),
+                    BlockType = newSpawnBlock.BlockType,
+                    BlockColor = newSpawnBlock.Color,
+                    TargetPos = newSpawnBlock.BlockPos,
+                    PrevBlockType = newSpawnBlock.BlockType,
+                });
+                
+                scanBlocks.BlocksMap[canRespawnBlockTile.TilePos] = newSpawnBlock;
+                scanTiles.TilesMap[canRespawnBlockTile.TilePos].ChildBlock = newSpawnBlock;
+            }
+            
+            foreach (var movableViewBlock in movableViewBlocks)
+            {
+                gameBlocksView.TrySpawnBlock(movableViewBlock,
+                    Managers.Data.ConstantsTableData.BlockDefaultMoveSpeed);
+            }
+
+            await UniTask.Delay(TimeSpan.FromSeconds(Managers.Data.ConstantsTableData.BlockDefaultMoveSpeed));
+            Managers.Game.GameBlocksModel.BlocksProperty.Value = new Blocks()
+            {
+                BlocksMap = new Dictionary<Vector2Int, Block>(scanBlocks.BlocksMap),
+            };
+            
+        } while (blankTiles.Any());
+
+        Managers.Game.GameBlocksModel.BlocksProperty.Value = scanBlocks;
+        Debug.Log(count + "탈출");
+        Managers.Game.ChangeGameState(EGameState.ScanAllBlocksMatch3);
+    }
 }
