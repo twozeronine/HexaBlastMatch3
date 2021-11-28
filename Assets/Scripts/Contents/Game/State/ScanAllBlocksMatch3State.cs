@@ -11,6 +11,7 @@ public class ScanAllBlocksMatch3State : IState
 
     public void Process()
     {
+        Managers.Game.GamePresenter.RequestScanAllBlocksMatch3();
     }
 
     public void End()

@@ -253,16 +253,9 @@ public static class HexaBlastEngineUtil
         // Top
         removeBlocks.AddRange((from block in blocks.BlocksMap.Values
             where 
-                  !matchedBlock.IsMatched3Bottom &&
-                  !matchedBlock.IsMatched3BottomLeft &&
-                  !matchedBlock.IsMatched3BottomRight &&
-                  !matchedBlock.IsMatched3TopRight &&
-                  !matchedBlock.IsMatched3TopLeft &&
-                  !matchedBlock.IsMatched3MiddleDiagonalLeftDown &&
-                  !matchedBlock.IsMatched3MiddleDiagonalRightDown &&
                   matchedBlock.IsMatched3Top
                   && matchedBlock.BlockPos.x == block.BlockPos.x
-                  && block.BlockPos.y - matchedBlock.BlockPos.y < 3
+                  && block.BlockPos.y - matchedBlock.BlockPos.y < 5
                   && block.BlockPos.y - matchedBlock.BlockPos.y >= 0
             select new MovableBlockView()
             {
@@ -276,16 +269,9 @@ public static class HexaBlastEngineUtil
         // Bottom
         removeBlocks.AddRange((from block in blocks.BlocksMap.Values
             where 
-                  !matchedBlock.IsMatched3Top &&
-                  !matchedBlock.IsMatched3BottomLeft &&
-                  !matchedBlock.IsMatched3BottomRight &&
-                  !matchedBlock.IsMatched3TopRight &&
-                  !matchedBlock.IsMatched3TopLeft &&
-                  !matchedBlock.IsMatched3MiddleDiagonalLeftDown &&
-                  !matchedBlock.IsMatched3MiddleDiagonalRightDown &&
                   matchedBlock.IsMatched3Bottom
                   && matchedBlock.BlockPos.x == block.BlockPos.x
-                  && matchedBlock.BlockPos.y - block.BlockPos.y < 3
+                  && matchedBlock.BlockPos.y - block.BlockPos.y < 5
                   && matchedBlock.BlockPos.y - block.BlockPos.y >= 0
             select new MovableBlockView()
             {
@@ -298,13 +284,7 @@ public static class HexaBlastEngineUtil
 
         // TopLeft
         removeBlocks.AddRange((from block in blocks.BlocksMap.Values
-            where !matchedBlock.IsMatched3Top &&
-                  !matchedBlock.IsMatched3BottomLeft &&
-                  !matchedBlock.IsMatched3BottomRight &&
-                  !matchedBlock.IsMatched3TopRight &&
-                  !matchedBlock.IsMatched3MiddleDiagonalLeftDown &&
-                  !matchedBlock.IsMatched3MiddleDiagonalRightDown &&
-                  !matchedBlock.IsMatched3Bottom && 
+            where 
                   matchedBlock.IsMatched3TopLeft
                   && (
                       (matchedBlock.BlockPos.x == block.BlockPos.x && matchedBlock.BlockPos.y  == block.BlockPos.y ) ||
@@ -322,13 +302,7 @@ public static class HexaBlastEngineUtil
 
         // TopRight
         removeBlocks.AddRange((from block in blocks.BlocksMap.Values
-            where !matchedBlock.IsMatched3Top &&
-                  !matchedBlock.IsMatched3BottomLeft &&
-                  !matchedBlock.IsMatched3BottomRight &&
-                  !matchedBlock.IsMatched3MiddleDiagonalLeftDown &&
-                  !matchedBlock.IsMatched3MiddleDiagonalRightDown &&
-                  !matchedBlock.IsMatched3Bottom && 
-                  !matchedBlock.IsMatched3TopLeft &&
+            where 
                   matchedBlock.IsMatched3TopRight
                   && (
                       (matchedBlock.BlockPos.x == block.BlockPos.x && matchedBlock.BlockPos.y  == block.BlockPos.y ) ||
@@ -346,13 +320,7 @@ public static class HexaBlastEngineUtil
         
         // BottomLeft
         removeBlocks.AddRange((from block in blocks.BlocksMap.Values
-            where !matchedBlock.IsMatched3Top &&
-                  !matchedBlock.IsMatched3BottomRight &&
-                  !matchedBlock.IsMatched3MiddleDiagonalLeftDown &&
-                  !matchedBlock.IsMatched3MiddleDiagonalRightDown &&
-                  !matchedBlock.IsMatched3Bottom && 
-                  !matchedBlock.IsMatched3TopLeft &&
-                  !matchedBlock.IsMatched3TopRight &&
+            where 
                   matchedBlock.IsMatched3BottomLeft
                   && (
                       (matchedBlock.BlockPos.x == block.BlockPos.x && matchedBlock.BlockPos.y  == block.BlockPos.y ) ||
@@ -370,13 +338,7 @@ public static class HexaBlastEngineUtil
         
         // BottomRight
         removeBlocks.AddRange((from block in blocks.BlocksMap.Values
-            where !matchedBlock.IsMatched3Top &&
-                  !matchedBlock.IsMatched3BottomLeft &&
-                  !matchedBlock.IsMatched3MiddleDiagonalLeftDown &&
-                  !matchedBlock.IsMatched3MiddleDiagonalRightDown &&
-                  !matchedBlock.IsMatched3Bottom && 
-                  !matchedBlock.IsMatched3TopLeft &&
-                  !matchedBlock.IsMatched3TopRight &&
+            where 
                   matchedBlock.IsMatched3BottomRight
                   && (
                       (matchedBlock.BlockPos.x == block.BlockPos.x && matchedBlock.BlockPos.y  == block.BlockPos.y ) ||
@@ -391,21 +353,16 @@ public static class HexaBlastEngineUtil
                 BlockColor = matchedBlock.Color,
                 PrevBlockType = block.BlockType,
             }).ToList());
-
-        // MiddleDiagonalLeftDown
+        
+        // MiddleY
         removeBlocks.AddRange((from block in blocks.BlocksMap.Values
-            where !matchedBlock.IsMatched3Top &&
-                  !matchedBlock.IsMatched3BottomLeft &&
-                  !matchedBlock.IsMatched3MiddleDiagonalRightDown &&
-                  !matchedBlock.IsMatched3Bottom && 
-                  !matchedBlock.IsMatched3TopLeft &&
-                  !matchedBlock.IsMatched3TopRight &&
-                  !matchedBlock.IsMatched3BottomRight &&
-                  matchedBlock.IsMatched3MiddleDiagonalLeftDown
+            where 
+                  matchedBlock.IsMatched3MiddleY
+                  && matchedBlock.BlockPos.x == block.BlockPos.x
                   && (
-                      (matchedBlock.BlockPos.x == block.BlockPos.x && matchedBlock.BlockPos.y  == block.BlockPos.y ) ||
-                      (matchedBlock.BlockPos.x-1 == block.BlockPos.x && matchedBlock.BlockPos.y+1  == block.BlockPos.y ) ||
-                      (matchedBlock.BlockPos.x+1 == block.BlockPos.x && matchedBlock.BlockPos.y-1  == block.BlockPos.y )
+                      matchedBlock.BlockPos.y  == block.BlockPos.y  ||
+                       matchedBlock.BlockPos.y+2  == block.BlockPos.y ||
+                       matchedBlock.BlockPos.y-2  == block.BlockPos.y
                   )
             select new MovableBlockView()
             {
@@ -416,20 +373,33 @@ public static class HexaBlastEngineUtil
                 PrevBlockType = block.BlockType,
             }).ToList());
 
-        // MiddleDiagonalRightDown
+        // MiddleDiagonalLeftDown
         removeBlocks.AddRange((from block in blocks.BlocksMap.Values
-            where !matchedBlock.IsMatched3Top &&
-                  !matchedBlock.IsMatched3BottomLeft &&
-                  !matchedBlock.IsMatched3Bottom && 
-                  !matchedBlock.IsMatched3TopLeft &&
-                  !matchedBlock.IsMatched3TopRight &&
-                  !matchedBlock.IsMatched3BottomRight &&
-                  !matchedBlock.IsMatched3MiddleDiagonalLeftDown &&
-                  matchedBlock.IsMatched3MiddleDiagonalRightDown
+            where 
+                  matchedBlock.IsMatched3MiddleDiagonalLeftDown
                   && (
                       (matchedBlock.BlockPos.x == block.BlockPos.x && matchedBlock.BlockPos.y  == block.BlockPos.y ) ||
                       (matchedBlock.BlockPos.x-1 == block.BlockPos.x && matchedBlock.BlockPos.y-1  == block.BlockPos.y ) ||
                       (matchedBlock.BlockPos.x+1 == block.BlockPos.x && matchedBlock.BlockPos.y+1  == block.BlockPos.y )
+                  )
+            select new MovableBlockView()
+            {
+                BlockPos = block.BlockPos,
+                TargetPos = block.BlockPos,
+                BlockType =  block.BlockType,
+                BlockColor = matchedBlock.Color,
+                PrevBlockType = block.BlockType,
+            }).ToList());
+        
+
+        // MiddleDiagonalRightDown
+        removeBlocks.AddRange((from block in blocks.BlocksMap.Values
+            where 
+                  matchedBlock.IsMatched3MiddleDiagonalRightDown
+                  && (
+                      (matchedBlock.BlockPos.x == block.BlockPos.x && matchedBlock.BlockPos.y  == block.BlockPos.y ) ||
+                      (matchedBlock.BlockPos.x+1 == block.BlockPos.x && matchedBlock.BlockPos.y-1  == block.BlockPos.y ) ||
+                      (matchedBlock.BlockPos.x-1 == block.BlockPos.x && matchedBlock.BlockPos.y+1  == block.BlockPos.y )
                   )
             select new MovableBlockView()
             {
@@ -441,5 +411,16 @@ public static class HexaBlastEngineUtil
             }).ToList());
 
         return removeBlocks.Distinct().ToList();
+        
+        /*
+           !matchedBlock.IsMatched3Top &&
+           !matchedBlock.IsMatched3BottomLeft &&
+           !matchedBlock.IsMatched3Bottom && 
+           !matchedBlock.IsMatched3TopLeft &&
+           !matchedBlock.IsMatched3TopRight &&
+           !matchedBlock.IsMatched3BottomRight &&
+           !matchedBlock.IsMatched3MiddleDiagonalLeftDown &&
+           !matchedBlock.IsMatched3MiddleY &&
+         */
     }
 }

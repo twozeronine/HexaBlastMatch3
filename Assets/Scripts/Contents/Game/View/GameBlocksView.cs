@@ -31,6 +31,7 @@ public class GameBlocksView : MonoBehaviour , BaseMVP.IView
         
         foreach (var block in blocks.BlocksMap.Values)
         {
+            if (block == null) continue;
             var blockObj = Managers.Resource.Instantiate("Game/Block", transform);
             blockObj.GetOrAddComponent<Poolable>();
            

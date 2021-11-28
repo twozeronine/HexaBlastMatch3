@@ -45,12 +45,13 @@ namespace Data
         public bool IsValid;
     }
 
-    public class MatchedBlock
+    public class MatchedBlock : IComparable<MatchedBlock>
     {
         public Vector2Int PrevBlockPos { get; set; } = new Vector2Int(-1, -1);
         public Vector2Int BlockPos { get; set; } = new Vector2Int(-1, -1);
         public BlockColor Color { get; set; }
         public BlockType BlockType { get; set; }
+        public int PriorityScore { get; set; } = 0;
         public bool IsMatched3Top { get; set; } = false;
         public bool IsMatched3TopLeft { get; set; } = false;
         public bool IsMatched3TopRight { get; set; } = false;
@@ -63,7 +64,29 @@ namespace Data
         public bool IsMatched3MiddleDiagonalRightDown { get; set; } = false;
 
         public bool IsMatched() => IsMatched3Bottom || IsMatched3TopLeft || IsMatched3TopRight || IsMatched3Top ||
-                                   IsMatched3BottomRight || IsMatched3BottomLeft || IsMatched3MiddleY;
+                                   IsMatched3BottomRight || IsMatched3BottomLeft || IsMatched3MiddleY 
+                                   || IsMatched3MiddleDiagonalLeftDown || IsMatched3MiddleDiagonalRightDown ;
+        public int GetPriorityScore()
+        {
+            PriorityScore += IsMatched3Top                     ? 1 : 0;
+            PriorityScore += IsMatched3TopLeft                 ? 1 : 0;
+            PriorityScore += IsMatched3TopRight                ? 1 : 0;
+            PriorityScore += IsMatched3Bottom                  ? 1 : 0;
+            PriorityScore += IsMatched3BottomRight             ? 1 : 0;
+            PriorityScore += IsMatched3BottomLeft              ? 1 : 0;
+            PriorityScore += IsMatched3MiddleY                 ? 1 : 0;
+            PriorityScore += IsMatched3MiddleDiagonalLeftDown  ? 1 : 0;
+            PriorityScore += IsMatched3MiddleDiagonalRightDown ? 1 : 0;
+
+            return PriorityScore;
+        }
+
+        public int CompareTo(MatchedBlock other)
+        {
+            if (this.GetPriorityScore() == other.GetPriorityScore()) return 0;
+
+            return this.GetPriorityScore() < other.GetPriorityScore() ? 1 : -1;
+        }
     }
     
     public struct MovableBlockView

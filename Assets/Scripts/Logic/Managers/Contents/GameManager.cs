@@ -5,6 +5,7 @@ using System.Linq;
 using Cysharp.Threading.Tasks;
 using Data;
 using Logic;
+using Match3OriginDataStructure;
 using UniRx;
 using UnityEngine;
 using Util;
@@ -192,5 +193,102 @@ public class GamePresenter
         Managers.Game.GameBlocksModel.BlocksProperty.Value = scanBlocks;
         Debug.Log("제거할 블록 있음");
         Managers.Game.ChangeGameState(EGameState.ScanAllBlocksMatch3);
+    }
+    
+     public async UniTaskVoid RequestScanAllBlocksMatch3()
+    {
+        Managers.Game.ChangeGameState(EGameState.Match3State);
+
+        // Match3 검사 로직 
+        var scanBlocks = new Blocks()
+        {
+            BlocksMap = new Dictionary<Vector2Int, Block>(Managers.Game.GameBlocksModel.BlocksProperty.Value
+                .BlocksMap)
+        };
+
+
+        List<MatchedBlock> matchedBlocks;
+
+        // 스왑했던 블럭 먼저 처리하기
+        var isSwap = GameUtil.GetGameModelSubsystem().CurrentSwapMatchedBlocks.Any();
+        
+        if (isSwap)
+        {
+            matchedBlocks = GameUtil.GetGameModelSubsystem().CurrentSwapMatchedBlocks.Select(pos =>
+                HexaBlastEngine.ScanMatch3(scanBlocks.BlocksMap[pos], scanBlocks)).ToList();
+            GameUtil.GetGameModelSubsystem().CurrentSwapMatchedBlocks.Clear();
+        }
+            
+        // 스왑했던 블럭이 아니고 검사에 들어온거면
+        else
+        {
+            matchedBlocks = scanBlocks.BlocksMap.Values.Select(block =>
+                HexaBlastEngine.ScanMatch3(scanBlocks.BlocksMap[block.BlockPos], scanBlocks)).ToList();
+        }
+
+        var removableBlocks = new List<MovableBlockView>();
+
+        // 매치된 점수가 가장 높은 블록 부터 처리해줌.
+        /*  Ex ) 
+         *                                                            1 <-- 이 블럭 입장에서 현재 매치 5됨.
+         *                                                            1 <-- 이 블럭 입장에서 현재 매치 4.
+         * 이 블럭 입장에선 현재 매치 3 와 매치 5됨. ( 우선 순위 1위임 ) ---> 1 1 1 <-- 이 블럭 입장에서 현재 매치 3.
+         *                                                            1 <-- 이 블럭 입장에서는 현재 매치 4.
+         *                                                            1 <-- 이 블럭 입장에서 현재 매치 5됨.
+         *
+         * 우선순위가 높은 블록으로 인해 제거 될 블록과 다른 낮은 우선순위의 블록의 포지션이 같으면 그 블록은 블록제거 로직을 거치지 않음 !!!
+         */
+        var priorityMatchedBlockQueue = new PriorityQueue<MatchedBlock>();
+
+        foreach (var matchedBlock in matchedBlocks)
+        {
+            priorityMatchedBlockQueue.Push(matchedBlock);
+        }
+
+        while (priorityMatchedBlockQueue.Count > 0)
+        {
+            // 우선 순위가 가장 높은 블록
+            var node = priorityMatchedBlockQueue.Pop();
+
+            // 우선 순위가 높은 블록에 의해서 제거된 블록에 현재 node 블록이 포함된 경우
+            var isRemoved = (from removeBlock in removableBlocks
+                where node.BlockPos == removeBlock.BlockPos
+                select removeBlock).Any();
+
+            if (isRemoved) continue;
+
+            removableBlocks.AddRange(HexaBlastEngineUtil.GetMatchedBlocks(scanBlocks, node, isSwap));
+        }
+
+        // 제거 되야 할 모든 블럭 제거
+        foreach (var removableBlock in removableBlocks)
+        {
+            scanBlocks.BlocksMap[removableBlock.BlockPos] = null;
+            Managers.Game.GameTilesModel.TilesProperty.Value.TilesMap[removableBlock.BlockPos].ChildBlock = null;
+        }
+        
+        Debug.Log("매칭된 블럭 갯수 " + removableBlocks.Count);
+        Managers.Game.GameBlocksModel.BlocksProperty.Value = scanBlocks;
+        
+        // 제거할 블럭이 없을시
+        if (!removableBlocks.Any())
+        {
+            // 제거할 블럭이 없으면서 제거할 수 있는 블럭이 없나 확인하고 섞음.
+            var doShuffle = HexaBlastEngine.TryCheckCanRemoveBlocks(scanBlocks, out var hintBlock);
+            if (!doShuffle)
+            {
+                Managers.Game.ChangeGameState(EGameState.ShuffleBlocks);
+                return;
+            }
+            else
+            {
+                Managers.Game.ChangeGameState(EGameState.WaitUserInput);
+                return;    
+            }
+        }
+
+        
+        await UniTask.Delay(TimeSpan.FromSeconds(Managers.Data.ConstantsTableData.BlankToFullBlockTime));
+        Managers.Game.ChangeGameState(EGameState.ScanBlankTileState);
     }
 }
