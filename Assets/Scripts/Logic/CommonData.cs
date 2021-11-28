@@ -47,10 +47,31 @@ namespace Data
 
     public class MatchedBlock
     {
+        public Vector2Int PrevBlockPos { get; set; } = new Vector2Int(-1, -1);
         public Vector2Int BlockPos { get; set; } = new Vector2Int(-1, -1);
         public BlockColor Color { get; set; }
+        public BlockType BlockType { get; set; }
         public bool IsMatched3Top { get; set; } = false;
+        public bool IsMatched3TopLeft { get; set; } = false;
         public bool IsMatched3TopRight { get; set; } = false;
+        public bool IsMatched3Bottom { get; set; } = false;
         public bool IsMatched3BottomRight { get; set; } = false;
+        
+        public bool IsMatched3BottomLeft { get; set; } = false;
+        public bool IsMatched3MiddleY { get; set; } = false;
+        public bool IsMatched3MiddleDiagonalLeftDown { get; set; } = false;
+        public bool IsMatched3MiddleDiagonalRightDown { get; set; } = false;
+
+        public bool IsMatched() => IsMatched3Bottom || IsMatched3TopLeft || IsMatched3TopRight || IsMatched3Top ||
+                                   IsMatched3BottomRight || IsMatched3BottomLeft || IsMatched3MiddleY;
+    }
+    
+    public struct MovableBlockView
+    {
+        public Vector2Int BlockPos { get; set; }
+        public Vector2Int TargetPos { get; set; }
+        public BlockType BlockType { get; set; }
+        public BlockColor BlockColor { get; set; }
+        public BlockType PrevBlockType { get; set; }
     }
 }

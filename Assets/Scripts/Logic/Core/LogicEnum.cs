@@ -55,4 +55,14 @@ namespace Logic
         Normal,
         Top,
     }
+    
+    public enum EGameState
+    {
+        WaitUserInput = 0,
+        Match3State,
+        WaitUserTapOff,
+        ScanBlankTileState,
+        ScanAllBlocksMatch3,
+        ShuffleBlocks,
+    }
 }

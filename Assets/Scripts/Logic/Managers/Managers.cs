@@ -51,6 +51,7 @@ public class Managers : MonoBehaviour
     void Update()
     {
         input.OnUpdate();
+        game.OnUpdate();
     }
 
     private static void init()
