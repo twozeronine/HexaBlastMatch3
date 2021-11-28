@@ -20,6 +20,7 @@ namespace Data
         public float DefaultHexPositionOffsetX { get; set; }
         public float DefaultHexPositionOffsetY { get; set; }
         public float BlockDefaultScale { get; set; }
+        public float DefaultBlockShuffleSpeed { get; set; }
     }
 
     [Serializable]

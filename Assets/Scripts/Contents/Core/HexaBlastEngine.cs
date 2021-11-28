@@ -318,6 +318,36 @@ public static class HexaBlastEngine
             IsMatched4MiddleDiagonalLowerRightDown = isMatched4MiddleDiagonalLowerRightDown,
         };
     }
+    
+    public static List<MovableBlockView> ShuffleAllBlocks(Blocks blocks)
+    {
+        var changedBlockDic = new Dictionary<Vector2Int, bool>();
+        var movableBlocks = new List<MovableBlockView>();
+
+        Vector2Int GetRandomBlockPos()
+        {
+            var getRandomPos = blocks.BlocksMap.Keys.OrderBy(block => Guid.NewGuid()).FirstOrDefault();
+            return changedBlockDic.ContainsKey(getRandomPos) ? GetRandomBlockPos() :
+                blocks.BlocksMap[getRandomPos].BlockType == BlockType.Normal ? getRandomPos : GetRandomBlockPos();
+        }
+
+        foreach (var movableBlock in from block in blocks.BlocksMap.Values
+            where block.BlockType == BlockType.Normal
+            select block)
+        {
+            var randomPos = GetRandomBlockPos();
+            changedBlockDic.Add(randomPos, true);
+            movableBlocks.Add(new MovableBlockView()
+            {
+                BlockPos = movableBlock.BlockPos,
+                TargetPos = randomPos,
+            });
+        }
+
+        return movableBlocks;
+    }
+    
+    
 }
 
 public static class HexaBlastEngineUtil

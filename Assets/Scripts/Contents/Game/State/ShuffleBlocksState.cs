@@ -7,6 +7,7 @@ public class ShuffleBlocksState : IState
     public void Begin()
     {
         Debug.Log("셔플 고고");
+        Managers.Game.GamePresenter.RequestShuffleBlocks();
     }
 
     public void Process()

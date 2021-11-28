@@ -275,8 +275,10 @@ public class GamePresenter
         {
             // 제거할 블럭이 없으면서 제거할 수 있는 블럭이 없나 확인하고 섞음.
             var doShuffle = HexaBlastEngine.TryCheckCanRemoveBlocks(scanBlocks, out var hintBlock);
+            Debug.Log($"{!doShuffle} : 셔플하기");
             if (!doShuffle)
             {
+                
                 Managers.Game.ChangeGameState(EGameState.ShuffleBlocks);
                 return;
             }
@@ -336,7 +338,9 @@ public class GamePresenter
                 select tile).ToList();
 
             if(!blankTiles.Any()) break;
-
+            
+            
+            // 아래쪽 먼저
             List<Block> canMoveToBottomBlocks;
             do
             {
@@ -383,6 +387,8 @@ public class GamePresenter
                 };
             } while (canMoveToBottomBlocks.Any());
 
+            
+            // 왼아래쪽 먼저
             List<Block> canMoveToBottomLeftBlocks;
             do
             {
@@ -429,6 +435,7 @@ public class GamePresenter
                 };
             } while (canMoveToBottomLeftBlocks.Any());
             
+            // 오른아래쪽 먼저
             List<Block> canMoveToBottomRightBlocks;
             do
             {
@@ -513,5 +520,77 @@ public class GamePresenter
         Managers.Game.GameBlocksModel.BlocksProperty.Value = scanBlocks;
         Debug.Log(count + "탈출");
         Managers.Game.ChangeGameState(EGameState.ScanAllBlocksMatch3);
+    }
+     
+      public async UniTaskVoid RequestShuffleBlocks()
+    {
+        var completeShuffleBlocks = false;
+
+        var scanBlocks = new Blocks()
+        {
+            BlocksMap = new Dictionary<Vector2Int, Block>(Managers.Game.GameBlocksModel.BlocksProperty.Value
+                .BlocksMap)
+        };
+
+        var prevCopyBlocks = scanBlocks.BlocksMap.ToDictionary(block => new Vector2Int(block.Key.x, block.Key.y), block => new Block()
+        {
+            BlockPos = block.Value.BlockPos,
+            BlockType = block.Value.BlockType,
+            Color = block.Value.Color,
+            IsValid = block.Value.IsValid,
+            ParentTile = block.Value.ParentTile,
+        });
+
+        var scanTiles = new Tiles()
+        {
+            TilesMap = new Dictionary<Vector2Int, Tile>(Managers.Game.GameTilesModel.TilesProperty.Value.TilesMap),
+        };
+
+        var movableBlocks = new List<MovableBlockView>();
+        
+        while (!completeShuffleBlocks)
+        {
+            movableBlocks = HexaBlastEngine.ShuffleAllBlocks(scanBlocks);
+
+            foreach (var movableBlock in movableBlocks)
+            {
+                
+            
+                // Model 갱신
+                scanBlocks.BlocksMap[movableBlock.TargetPos] = new Block()
+                {
+                    IsValid = prevCopyBlocks[movableBlock.BlockPos].IsValid,
+                    Color = prevCopyBlocks[movableBlock.BlockPos].Color,
+                    BlockPos = prevCopyBlocks[movableBlock.TargetPos].BlockPos,
+                    ParentTile = prevCopyBlocks[movableBlock.BlockPos].ParentTile,
+                    BlockType = prevCopyBlocks[movableBlock.BlockPos].BlockType,
+                };
+
+                scanTiles.TilesMap[movableBlock.TargetPos].ChildBlock = new Block()
+                {
+                    IsValid = prevCopyBlocks[movableBlock.BlockPos].IsValid,
+                    Color = prevCopyBlocks[movableBlock.BlockPos].Color,
+                    BlockPos = prevCopyBlocks[movableBlock.TargetPos].BlockPos,
+                    ParentTile = prevCopyBlocks[movableBlock.BlockPos].ParentTile,
+                    BlockType = prevCopyBlocks[movableBlock.BlockPos].BlockType,
+                };
+            }
+
+            var match3BlockList = HexaBlastEngine.ScanInitMatched3Blocks(scanBlocks);
+            completeShuffleBlocks = !match3BlockList.Any() && HexaBlastEngine.TryCheckCanRemoveBlocks(scanBlocks,out var hintBlock);
+        }
+
+        var defaultBlocksShuffleSpeed = Managers.Data.ConstantsTableData.DefaultBlockShuffleSpeed;
+        
+        foreach (var movableBlock in movableBlocks)
+        {
+            // View 갱신
+            gameBlocksView.MoveBlock(movableBlock,defaultBlocksShuffleSpeed);
+        }
+
+        await UniTask.Delay(TimeSpan.FromSeconds(defaultBlocksShuffleSpeed));
+        Managers.Game.GameTilesModel.TilesProperty.Value = scanTiles;
+        Managers.Game.GameBlocksModel.BlocksProperty.Value = scanBlocks;
+        Managers.Game.ChangeGameState(EGameState.WaitUserInput);
     }
 }

@@ -1,12 +1,13 @@
 {
 	"constantsTableData": {
-		"BlockDefaultMoveSpeed": 0.3,
+		"BlockDefaultMoveSpeed": 0.2,
 		"BlockGravityMoveSpeed": 0.1,
 		"BlankToFullBlockTime": 0.1,
 		"TileDefaultScale": 0.85,
 		"BlockMixMoveSpeed": 0.3,
 		"DefaultHexPositionOffsetX": 0.65,
 		"DefaultHexPositionOffsetY": 0.375,
-		"BlockDefaultScale": 0.65
+		"BlockDefaultScale": 0.65,
+		"DefaultBlockShuffleSpeed": 2
 	}
 }
