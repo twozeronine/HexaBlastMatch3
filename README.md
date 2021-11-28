@@ -17,6 +17,7 @@
 
 # Environments
 
+-   Unity@2020.3.15.f2
 -   Unirx@7.1.0
 -   Lean Touch@2.3.5
 -   DoTween@1.2.632
