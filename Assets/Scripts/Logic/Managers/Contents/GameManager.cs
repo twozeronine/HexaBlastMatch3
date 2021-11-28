@@ -275,7 +275,6 @@ public class GamePresenter
         {
             // 제거할 블럭이 없으면서 제거할 수 있는 블럭이 없나 확인하고 섞음.
             var doShuffle = HexaBlastEngine.TryCheckCanRemoveBlocks(scanBlocks, out var hintBlock);
-            Debug.Log($"{!doShuffle} : 셔플하기");
             if (!doShuffle)
             {
                 
@@ -297,7 +296,6 @@ public class GamePresenter
      public async UniTaskVoid RequestScanBlankTile()
     {
         Managers.Game.ChangeGameState(EGameState.Match3State);
-        var count = 0;
 
         var blankTiles = new List<Tile>();
         var tiles = Managers.Game.GameTilesModel.TilesProperty.Value;
@@ -518,7 +516,6 @@ public class GamePresenter
         } while (blankTiles.Any());
 
         Managers.Game.GameBlocksModel.BlocksProperty.Value = scanBlocks;
-        Debug.Log(count + "탈출");
         Managers.Game.ChangeGameState(EGameState.ScanAllBlocksMatch3);
     }
      
