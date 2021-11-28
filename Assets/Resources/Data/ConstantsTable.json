@@ -6,6 +6,7 @@
 		"TileDefaultScale": 0.85,
 		"BlockMixMoveSpeed": 0.3,
 		"DefaultHexPositionOffsetX": 0.65,
-		"DefaultHexPositionOffsetY": 0.375
+		"DefaultHexPositionOffsetY": 0.375,
+		"BlockDefaultScale": 0.65
 	}
 }

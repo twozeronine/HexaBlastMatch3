@@ -19,6 +19,7 @@ namespace Data
         public float BlockMixMoveSpeed { get; set; }
         public float DefaultHexPositionOffsetX { get; set; }
         public float DefaultHexPositionOffsetY { get; set; }
+        public float BlockDefaultScale { get; set; }
     }
 
     [Serializable]

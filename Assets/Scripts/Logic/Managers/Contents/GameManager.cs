@@ -6,6 +6,7 @@ public class GameManager
 {
     // Model
     public GameTilesModel GameTilesModel { get; set; } = new GameTilesModel();
+    public GameBlocksModel GameBlocksModel { get; set; } = new GameBlocksModel();
     
     // Presenter
     private GamePresenter gamePresenter { get; set; } = new GamePresenter();
@@ -21,10 +22,12 @@ public class GamePresenter
 {
     // View
     private GameTilesView gameTilesView;
-
+    private GameBlocksView gameBlocksView;
+    
     public void Init()
     {
-        var gameTileViewGo = Managers.Resource.Instantiate("Game/GameBoardLayout");
-        gameTilesView = gameTileViewGo.GetComponentInChildren<GameTilesView>();
+        var gameBoardLayout = Managers.Resource.Instantiate("Game/GameBoardLayout");
+        gameTilesView = gameBoardLayout.GetComponentInChildren<GameTilesView>();
+        gameBlocksView = gameBoardLayout.GetComponentInChildren<GameBlocksView>();
     }
 }
