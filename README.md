@@ -16,11 +16,12 @@
 
 ## 기타 구현한 내용
 
-1. UniRx를 사용하여 MVP 패턴으로 유지보수에 용이하게끔 로직과 View 분리
+1. UniRx를 사용하여 MVP 패턴으로 유지보수에 용이하게 끔 로직과 View 분리
 2. StateMachine으로 상태 관리
 3. 블록 Shuffle 기능 구현
 4. 엑셀 데이터 연동
 5. 오브젝트 풀링 구현
+6. GameTopUI 구현
 
 # Environments
 

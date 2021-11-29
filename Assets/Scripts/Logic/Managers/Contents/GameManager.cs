@@ -15,6 +15,7 @@ public class GameManager
     // Model
     public GameTilesModel GameTilesModel { get; set; } = new GameTilesModel();
     public GameBlocksModel GameBlocksModel { get; set; } = new GameBlocksModel();
+    public GameTopUIModel GameTopUIModel { get; set; } = new GameTopUIModel();
     
     // Presenter
     public GamePresenter GamePresenter { get; set; } = new GamePresenter();
@@ -65,6 +66,7 @@ public class GamePresenter
     // View
     private GameTilesView gameTilesView;
     private GameBlocksView gameBlocksView;
+    private GameTopUIView gameTopUIView;
     
     public void Init()
     {
@@ -72,6 +74,8 @@ public class GamePresenter
         gameTilesView = gameBoardLayout.GetComponentInChildren<GameTilesView>();
         gameBlocksView = gameBoardLayout.GetComponentInChildren<GameBlocksView>();
         SubscribeUserDragBlocks();
+
+        gameTopUIView = Managers.UI.ShowSceneUI<GameTopUIView>("GameTopUiCanvas");
     }
     
     // User Drag 구독
@@ -104,8 +108,7 @@ public class GamePresenter
     {
         var swapBlockPos = selectBlocks.Reverse().ToList();
 
-        // View 갱신
-        // View 갱신 하는 동안 User State는 입력을 받지 않는 대기 상태로 변환
+        
         Managers.Game.ChangeGameState(EGameState.Match3State);
         GameUtil.GetGameViewSubsystem().IsTapOff = false;
 
@@ -116,6 +119,7 @@ public class GamePresenter
             swapBlockPos.Reverse();
         }
 
+        // View 갱신
         foreach (var movableBlock in movableBlocks)
         {
             gameBlocksView.MoveBlock(movableBlock);
@@ -192,6 +196,7 @@ public class GamePresenter
         // User State를 다시 입력 받을 수 있는 상태로 변경.
         Managers.Game.GameBlocksModel.BlocksProperty.Value = scanBlocks;
         Debug.Log("제거할 블록 있음");
+        Managers.Game.GameTopUIModel.MoveCount.Value -= 1;
         Managers.Game.ChangeGameState(EGameState.ScanAllBlocksMatch3);
     }
     
@@ -265,6 +270,9 @@ public class GamePresenter
         {
             scanBlocks.BlocksMap[removableBlock.BlockPos] = null;
             Managers.Game.GameTilesModel.TilesProperty.Value.TilesMap[removableBlock.BlockPos].ChildBlock = null;
+           
+            // TopUIView 갱신
+            Managers.Game.GameTopUIModel.Score.Value += 100;
         }
         
         Debug.Log("매칭된 블럭 갯수 " + removableBlocks.Count);
